@@ -179,12 +179,18 @@ Devuelve SOLO el JSON, sin explicación.`;
     }
   };
 
+  const deleteAnalysis = async (id: string) => {
+    await supabase.from('ai_analyses').delete().eq('id', id);
+    setAnalyses((prev) => prev.filter((a) => a.id !== id));
+  };
+
   return {
     analyses,
     loading,
     analyzing,
     analyzeFinances,
     interpretTransaction,
+    deleteAnalysis,
     refetch: fetchAnalyses,
   };
 }

@@ -284,6 +284,7 @@ export default function App() {
             analyses={aiAnalysis.analyses}
             analyzing={aiAnalysis.analyzing}
             onAnalyze={aiAnalysis.analyzeFinances}
+            onDeleteAnalysis={aiAnalysis.deleteAnalysis}
             onUpgrade={() => { setTab('plans'); }}
           />
         )}

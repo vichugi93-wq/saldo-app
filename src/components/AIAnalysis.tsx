@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, Sparkles, Lock, Loader2, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Bot, Sparkles, Lock, Loader2, ChevronDown, ChevronUp, Clock, Trash2 } from 'lucide-react';
 import { Transaction } from '../types/transaction';
 import { Goal } from '../types/goal';
 import { CurrencyCode } from '../types/currency';
@@ -19,6 +19,7 @@ interface Props {
   analyses: AIAnalysisRecord[];
   analyzing: boolean;
   onAnalyze: (transactions: Transaction[], goals: Goal[], currency: CurrencyCode, userName: string) => Promise<string>;
+  onDeleteAnalysis: (id: string) => void;
   onUpgrade: () => void;
 }
 
@@ -51,8 +52,17 @@ function extractFirstLine(content: string): string {
   return first.length > 70 ? first.slice(0, 70) + '…' : first;
 }
 
-function AnalysisCard({ analysis, defaultOpen }: { analysis: { id: string; content: string; created_at: string }; defaultOpen: boolean }) {
+function AnalysisCard({
+  analysis,
+  defaultOpen,
+  onDelete,
+}: {
+  analysis: { id: string; content: string; created_at: string };
+  defaultOpen: boolean;
+  onDelete: (id: string) => void;
+}) {
   const [open, setOpen] = useState(defaultOpen);
+  const [deleting, setDeleting] = useState(false);
   const score = extractScore(analysis.content);
   const preview = extractFirstLine(analysis.content);
 
@@ -63,30 +73,44 @@ function AnalysisCard({ analysis, defaultOpen }: { analysis: { id: string; conte
     hour: '2-digit', minute: '2-digit',
   });
 
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('¿Eliminar este análisis?')) return;
+    setDeleting(true);
+    onDelete(analysis.id);
+  };
+
   return (
-    <div className={`card transition-colors ${open ? 'border-income/20' : 'hover:border-muted/30'}`}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-start justify-between gap-3 text-left"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Clock size={12} className="text-muted flex-shrink-0" />
-            <span className="text-muted text-xs">{fecha} · {hora}</span>
-            {score && (
-              <span className="badge-pro text-xs">
-                {score}
-              </span>
+    <div className={`card transition-colors ${open ? 'border-income/20' : 'hover:border-muted/30'} ${deleting ? 'opacity-50' : ''}`}>
+      <div className="flex items-start gap-3">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex-1 flex items-start justify-between gap-3 text-left min-w-0"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Clock size={12} className="text-muted flex-shrink-0" />
+              <span className="text-muted text-xs">{fecha} · {hora}</span>
+              {score && <span className="badge-pro text-xs">{score}</span>}
+            </div>
+            {!open && (
+              <p className="text-muted text-xs mt-1.5 truncate">{preview}</p>
             )}
           </div>
-          {!open && (
-            <p className="text-muted text-xs mt-1.5 truncate">{preview}</p>
-          )}
-        </div>
-        <span className="text-muted flex-shrink-0 mt-0.5">
-          {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-        </span>
-      </button>
+          <span className="text-muted flex-shrink-0 mt-0.5">
+            {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </span>
+        </button>
+
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="text-muted hover:text-expense p-1 rounded-lg hover:bg-expense/10 transition-colors flex-shrink-0 mt-0.5"
+          title="Eliminar análisis"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
 
       {open && (
         <div className="mt-4 pt-4 border-t border-border tab-enter">
@@ -99,7 +123,7 @@ function AnalysisCard({ analysis, defaultOpen }: { analysis: { id: string; conte
 
 export function AIAnalysis({
   transactions, goals, currency, userName, isPro,
-  analyses, analyzing, onAnalyze, onUpgrade,
+  analyses, analyzing, onAnalyze, onDeleteAnalysis, onUpgrade,
 }: Props) {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -213,7 +237,7 @@ export function AIAnalysis({
             </div>
           ) : (
             analyses.map((a, i) => (
-              <AnalysisCard key={a.id} analysis={a} defaultOpen={i === 0} />
+              <AnalysisCard key={a.id} analysis={a} defaultOpen={i === 0} onDelete={onDeleteAnalysis} />
             ))
           )}
         </div>
