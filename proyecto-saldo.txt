@@ -1,0 +1,357 @@
+Crea una aplicación web completa de finanzas personales llamada "Saldo" con autenticación, sistema freemium con cobro manual, análisis IA, metas de ahorro, soporte multi-moneda y base de datos en Supabase.
+
+## Nombre y marca
+- Nombre: Saldo
+- Tagline: "Tus finanzas, bajo control"
+- Colores: fondo #0f0f0f, verde #22c55e (ingresos/positivo), rojo #ef4444 (gastos/negativo), amarillo #eab308 (metas/advertencia/pendiente), gris #71717a (textos secundarios)
+- Tipografía: Inter o System UI
+
+## Stack tecnológico
+- Frontend: React + Vite + TypeScript
+- Estilos: Tailwind CSS
+- Gráficos: Recharts
+- IA: Anthropic API (claude-sonnet-4-6)
+- Autenticación y base de datos: Supabase
+- Storage de comprobantes: Supabase Storage
+- ORM: Supabase JS Client (@supabase/supabase-js, usando el nuevo sistema de claves sb_publishable_ / sb_secret_)
+
+## Configuración de Supabase
+
+### Tablas necesarias (incluir SQL completo para crearlas)
+```sql
+create table profiles (
+  id uuid references auth.users primary key,
+  name text,
+  currency text default 'PYG',
+  plan text default 'basic',
+  plan_expires_at timestamptz,
+  is_admin boolean default false,
+  created_at timestamptz default now()
+);
+
+create table transactions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  type text not null,
+  amount numeric not null,
+  category text not null,
+  description text,
+  date date not null,
+  created_at timestamptz default now()
+);
+
+create table goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  name text not null,
+  target_amount numeric not null,
+  current_amount numeric default 0,
+  deadline date,
+  category text,
+  status text default 'active',
+  created_at timestamptz default now()
+);
+
+create table ai_analyses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  content text not null,
+  created_at timestamptz default now()
+);
+
+create table family_profiles (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users not null,
+  name text not null,
+  color text,
+  currency text default 'PYG',
+  created_at timestamptz default now()
+);
+
+create table payment_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  plan_requested text not null,
+  receipt_url text not null,
+  reference_note text,
+  status text default 'pending',
+  admin_note text,
+  reviewed_by uuid references auth.users,
+  reviewed_at timestamptz,
+  created_at timestamptz default now()
+);
+```
+
+### Row Level Security (RLS)
+- Habilitar RLS en todas las tablas
+- Cada usuario solo lee y escribe sus propios datos
+- En payment_requests: el usuario crea las suyas, solo el admin (is_admin = true) actualiza el status
+- Incluir las políticas SQL necesarias
+
+### Supabase Storage
+- Bucket `comprobantes` (privado)
+- Usuario sube solo a su propia carpeta ({user_id}/...)
+- Admin puede leer todos los archivos
+- Formatos: jpg, png, pdf — máximo 5MB
+
+### Autenticación Supabase
+- Email + contraseña
+- Recuperación de contraseña por email
+- Confirmación de email al registrarse
+
+## Flujo de autenticación
+
+### Login/registro
+- Diseño centrado, oscuro, logo "Saldo" y tagline
+- Tabs: "Iniciar sesión" | "Crear cuenta"
+- Login: email, contraseña
+- Registro: nombre, email, contraseña, confirmar contraseña
+- Link "¿Olvidaste tu contraseña?"
+- Manejo de errores: email ya registrado, contraseña incorrecta, email no confirmado
+
+### Onboarding (primera vez)
+- Paso 1: Confirmar nombre
+- Paso 2: Seleccionar moneda preferida
+- Paso 3: Resumen de planes
+- Guardar en profiles
+
+### Sesión persistente
+- Sesión activa entre recargas
+- Botón "Cerrar sesión" en Perfil
+- Redirigir a login si expira
+
+## Sistema multi-moneda
+
+### Monedas disponibles
+₲ Guaraní Paraguayo (PYG, por defecto), $ Peso Argentino (ARS), $ Dólar Estadounidense (USD), R$ Real Brasileño (BRL), $ Peso Uruguayo (UYU), $ Peso Chileno (CLP), $ Peso Colombiano (COP), $ Peso Mexicano (MXN), S/. Sol Peruano (PEN), Bs. Boliviano (BOB), € Euro (EUR)
+
+### Comportamiento
+- Moneda guardada en profiles
+- Símbolo dinámico en formularios, tarjetas, gráficos, exportaciones
+- IA menciona la moneda del usuario en su análisis
+- Cada perfil familiar tiene su propia moneda
+- Formato por moneda:
+  * PYG: sin decimales (₲ 150.000)
+  * USD, EUR: 2 decimales ($ 150.00)
+  * ARS, CLP, COP: sin decimales ($ 150.000)
+  * BRL: 2 decimales con coma (R$ 150,00)
+  * Resto: 2 decimales
+
+## Sistema de planes Freemium con cobro manual
+
+### Plan Básico — Gratis
+- Hasta 50 transacciones por mes
+- 1 meta de ahorro activa
+- Dashboard con gráficos básicos
+- Sin análisis IA, sin exportar reportes
+- Marca de agua "Saldo Básico" en footer
+- Periodo de gracia: todo usuario nuevo recibe 30 días de plan Pro gratis al registrarse
+
+### Plan Pro — $4 USD/mes (o equivalente en moneda local)
+- Transacciones ilimitadas, metas ilimitadas
+- Dashboard completo
+- Análisis IA ilimitado
+- Exportar reportes
+- Historial de últimos 5 análisis
+- Badge "Pro", sin marca de agua
+
+### Plan Familiar — $8 USD/mes (o equivalente en moneda local)
+- Todo lo de Pro
+- Hasta 4 perfiles familiares
+- Dashboard familiar consolidado
+- Comparativa de gastos entre miembros
+- Meta compartida
+- Badge "Familia"
+
+### Flujo de cobro manual
+1. Al vencer el periodo de prueba (o si Básico quiere upgrade), mostrar pantalla de planes con instrucciones de transferencia bancaria
+2. Pantalla muestra datos de cuenta (placeholder editable), monto según plan y moneda
+3. Usuario sube foto/PDF del comprobante
+4. Usuario opcionalmente agrega nota de referencia
+5. Se crea registro en payment_requests con status 'pending'
+6. Usuario ve: "Tu pago está en revisión. Te avisaremos cuando se active tu plan (normalmente en menos de 24hs)"
+7. El plan permanece en su estado actual hasta aprobación
+
+### Validación del plan
+- Plan y vencimiento guardados en profiles
+- Al iniciar sesión, verificar vigencia
+- Si venció, degradar automáticamente a Básico y notificar
+- Banner si el plan vence en menos de 5 días
+
+## Panel de administración (solo is_admin = true)
+
+### Acceso
+- Ruta /admin solo visible si profiles.is_admin = true
+- Si no-admin intenta acceder, redirigir al dashboard
+
+### Funcionalidades
+- Lista de payment_requests, pendientes primero
+- Por solicitud: nombre, email, plan solicitado, monto esperado, fecha, nota de referencia
+- Botón para ver/descargar comprobante
+- Botones "Aprobar" y "Rechazar"
+- Al aprobar: actualizar profiles.plan, plan_expires_at (+30 días desde aprobación), status='approved', guardar reviewed_by y reviewed_at
+- Al rechazar: pedir admin_note obligatorio, status='rejected'
+- Filtros: pendientes / aprobadas / rechazadas / todas
+- Estadísticas: total usuarios, usuarios por plan, solicitudes pendientes
+
+### Primer admin
+Incluir comentario SQL:
+`update profiles set is_admin = true where id = 'tu-user-id-aqui';`
+
+## Funcionalidades principales
+
+### 1. Transacciones
+- Formulario con símbolo de moneda dinámico
+- Toggle "Gasto"/"Ingreso"
+- Pegar texto libre para que IA interprete y categorice (Pro y Familiar)
+- Categorías gastos: Alimentación, Transporte, Salud, Entretenimiento, Ropa, Hogar, Educación, Otros
+- Categorías ingresos: Salario, Freelance, Negocio, Inversiones, Otros ingresos
+- Guardado en Supabase
+- Banner de upgrade al llegar al límite de 50 (plan Básico)
+
+### 2. Dashboard
+- Balance del mes con moneda correcta
+- Gráfico de torta: gastos por categoría
+- Gráfico de barras apiladas: ingresos vs gastos por semana (Pro y Familiar)
+- Gráfico de línea: evolución saldo neto últimos 3 meses (Pro y Familiar)
+- Tarjetas: ingresos, gastos, saldo neto, % gastado, comparación vs mes anterior
+- Features bloqueadas con candado animado
+
+### 3. Metas de ahorro
+- Básico: 1 meta. Pro/Familiar: ilimitadas
+- Campos: nombre, monto objetivo, fecha límite, categoría
+- Asignar dinero desde saldo disponible
+- Barra de progreso visual
+- Meta compartida en plan Familiar
+- Notificación al completar meta
+
+### 4. Análisis con IA (Pro y Familiar)
+- Bloqueado en Básico
+- Guardado en ai_analyses
+- Si VITE_ANTHROPIC_API_KEY no está configurada, el botón "Analizar mis finanzas" debe mostrar un mensaje amigable: "Esta función estará disponible muy pronto" en vez de lanzar un error técnico
+- Claude recibe la moneda del usuario y la menciona en su respuesta
+- Respuesta incluye:
+  * Puntuación salud financiera 1-10
+  * Diagnóstico ingresos/gastos
+  * 3 patrones detectados
+  * 3 recomendaciones de ahorro
+  * Sugerencia distribución hacia metas
+  * Proyección temporal para metas
+- Historial de últimos 5 análisis
+
+### 5. Perfiles familiares (Familiar)
+- Guardados en family_profiles
+- Selector de perfil al entrar
+- Nombre, avatar con inicial, color y moneda propia
+- Dashboard individual y vista consolidada
+- Comparativa de gastos entre miembros
+
+### 6. Historial y filtros
+- Datos desde Supabase con paginación
+- Verde ingresos, rojo gastos
+- Filtros: mes, tipo, categoría, rango de monto
+- Editar y eliminar transacciones
+
+### 7. Exportar resumen (Pro y Familiar)
+- Bloqueado en Básico
+- Resumen mensual completo al portapapeles
+
+### 8. Pantalla de planes (/planes)
+- Comparativa visual de 3 planes en tarjetas
+- Pro destacado como "Más popular"
+- Checkmarks y X por feature
+- Instrucciones de pago manual (datos bancarios placeholder + subida de comprobante)
+- Testimonios ficticios
+- Mensaje destacado: "Probá Pro gratis por 30 días al registrarte"
+
+## Navegación
+Pestañas: Dashboard | Transacciones | Metas | Análisis IA | Perfil
+- Si is_admin = true, agregar pestaña "Admin"
+- Pestañas bloqueadas visibles con candado
+- Perfil: nombre, email, plan activo, moneda, fecha vencimiento, estado de solicitud de pago si aplica, cerrar sesión
+
+## Diseño y UX
+- Dark mode por defecto
+- Responsive móvil y desktop
+- Loading states y skeleton loaders
+- Modal de onboarding al primer uso
+- Animaciones suaves en gráficos y barras
+- Candados animados en features bloqueadas
+- Banners no intrusivos de upgrade y vencimiento próximo
+- Badge "Pendiente de aprobación" visible en Perfil cuando aplica
+- Idioma: español
+
+## Datos de ejemplo
+Solo si el usuario no tiene transacciones en Supabase:
+- 10 gastos variados del mes actual
+- 3 ingresos del mes
+- 2 metas con progreso parcial
+- Datos de 2 meses anteriores para gráficos
+
+## Estructura de archivos
+src/
+  components/
+    Auth/
+      LoginForm.tsx
+      RegisterForm.tsx
+      ForgotPassword.tsx
+    Admin/
+      AdminPanel.tsx
+      PaymentRequestCard.tsx
+      AdminStats.tsx
+    Dashboard.tsx
+    TransactionForm.tsx
+    TransactionList.tsx
+    SavingsGoals.tsx
+    AIAnalysis.tsx
+    Plans.tsx
+    PaymentUpload.tsx
+    FamilyProfiles.tsx
+    UpgradeModal.tsx
+    WelcomeModal.tsx
+    CurrencySelector.tsx
+    Charts/
+      PieChart.tsx
+      BarChart.tsx
+      LineChart.tsx
+  hooks/
+    useAuth.ts
+    useTransactions.ts
+    useSavingsGoals.ts
+    useAIAnalysis.ts
+    usePlan.ts
+    useFamilyProfiles.ts
+    useCurrency.ts
+    usePaymentRequests.ts
+  lib/
+    supabase.ts
+  types/
+    transaction.ts
+    goal.ts
+    plan.ts
+    profile.ts
+    currency.ts
+    paymentRequest.ts
+  utils/
+    categories.ts
+    formatters.ts
+    currencies.ts
+  App.tsx
+  main.tsx
+
+## Variables de entorno
+VITE_SUPABASE_URL=https://qlosicifqbqkmjdbszkd.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_6R-rL7Vg9X2uq-b0wDt5-g_whLvmJcA (formato sb_publishable_...)
+VITE_ANTHROPIC_API_KEY=tu_api_key_de_anthropic (opcional al inicio, ver manejo de error arriba)
+
+## Notas importantes
+- Crear lib/supabase.ts con el cliente inicializado
+- Incluir al inicio el SQL completo para tablas, políticas RLS y bucket de Storage
+- Usar supabase.auth.onAuthStateChange para manejar sesión reactivamente
+- Al registrarse: crear registro en profiles con plan='pro' y plan_expires_at = now() + 30 días
+- Validar plan siempre desde Supabase, nunca solo desde estado local
+- Loading skeletons mientras se obtienen datos
+- Manejar errores de red con mensajes amigables
+- Instrucciones de pago (datos bancarios) en una constante fácil de editar en utils/
+- Admin panel simple y funcional, sin librerías extra de tablas
+- Dejar comentado como TODO dónde y cómo integrar Bancard (vPOS) en el futuro, sin implementarlo todavía

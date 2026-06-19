@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0a0a0a;
+    color: #f4f4f5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Tabular numbers para todos los montos */
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #232323 transparent;
+  }
+  *::-webkit-scrollbar { width: 5px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background-color: #232323; border-radius: 3px; }
+
+  /* Foco accesible en todos los interactivos */
+  :focus-visible {
+    outline: 2px solid #22c55e;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Respetar preferencia de reducción de movimiento */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-xl p-4;
+  }
+
+  /* Botones */
+  .btn-primary {
+    @apply bg-income text-black font-semibold py-2 px-4 rounded-lg
+           shadow-btn hover:shadow-btn-hover hover:-translate-y-px
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+  }
+
+  .btn-secondary {
+    @apply bg-surface border border-border text-white font-medium py-2 px-4 rounded-lg
+           hover:border-muted hover:shadow-btn-hover
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply bg-expense/10 border border-expense/30 text-expense font-medium py-2 px-4 rounded-lg
+           hover:bg-expense hover:text-white hover:border-expense
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-pro {
+    @apply bg-pro/10 border border-pro/30 text-pro font-semibold py-2 px-4 rounded-lg
+           hover:bg-pro hover:text-black
+           transition-all duration-200;
+  }
+
+  /* Inputs */
+  .input {
+    @apply bg-surface border border-border text-white placeholder-muted rounded-lg px-3 py-2 w-full
+           focus:outline-none focus:border-income focus:ring-1 focus:ring-income/20
+           transition-colors duration-150;
+  }
+
+  .label {
+    @apply text-xs text-muted mb-1.5 block font-medium uppercase tracking-wide;
+  }
+
+  /* Badges de plan */
+  .badge-pro {
+    @apply text-xs font-bold px-2 py-0.5 rounded
+           bg-pro/10 text-pro border border-pro/30;
+  }
+
+  .badge-family {
+    @apply text-xs font-bold px-2 py-0.5 rounded
+           bg-goal/10 text-goal border border-goal/30;
+  }
+
+  .badge-basic {
+    @apply text-xs font-medium px-2 py-0.5 rounded
+           bg-border text-muted border border-border;
+  }
+
+  /* Monto con tipografía display */
+  .amount {
+    @apply font-display font-semibold tabular;
+  }
+
+  /* Estado vacío estándar */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-14 gap-3 text-center;
+  }
+}
+
+/* Animación de skeleton loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #161616 25%,
+    #1e1e1e 50%,
+    #161616 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* Barra de categoría animada */
+.bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  width: 0;
+  transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Brillo de meta completada */
+.goal-shine-bar {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Transición entre tabs */
+.tab-enter {
+  animation: fade-up 220ms ease both;
+}

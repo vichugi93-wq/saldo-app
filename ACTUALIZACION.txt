@@ -1,0 +1,53 @@
+Mejorar el diseño visual de la app "Saldo" para que se vea pulida, profesional y con identidad propia — no como una plantilla genérica de dashboard financiero oscuro.
+
+## Dirección de diseño
+
+### Concepto / Signature
+Saldo trata sobre control y claridad sobre el propio dinero, en un contexto latinoamericano cotidiano (guaraníes, pesos, no dólares de Silicon Valley). El elemento de firma de la app debe ser un indicador visual de "balance" — literal: una barra o línea horizontal delgada que representa el punto de equilibrio entre ingresos y gastos, que aparece sutilmente en el dashboard (por ejemplo, una línea central animada de la que "cuelgan" o "flotan" las barras de ingreso/gasto, en vez del típico gráfico de torta genérico como elemento principal).
+
+### Paleta (refinar la actual, no genérica)
+- Fondo base: #0a0a0a (negro cálido, no negro puro)
+- Superficie de tarjetas: #161616 con borde sutil #232323
+- Acento principal (positivo/ingreso): #22c55e
+- Acento secundario (atención/meta): #eab308
+- Negativo/gasto: #ef4444
+- Texto principal: #f4f4f5
+- Texto secundario: #8b8b93 (no gris neutro genérico, con un toque cálido)
+- Un quinto color de acento poco usual para destacar elementos premium/Pro: #a78bfa (violeta suave) — usar SOLO en badges de Pro/Familiar y en el botón de upgrade, para diferenciarlo claramente de las acciones financieras normales
+
+### Tipografía
+- Display (números grandes, montos): una tipografía con carácter numérico fuerte y tabular, como "Space Grotesk" o "Lexend" — los montos de dinero deben sentirse sólidos y legibles, no genéricos
+- Cuerpo: "Inter" para el resto de la interfaz
+- Usar tabular-nums en CSS para todos los montos, de forma que las cifras no salten de ancho al cambiar
+
+### Layout y jerarquía
+- El balance del mes (saldo neto) debe ser el elemento más grande y prominente del Dashboard, no una tarjeta más entre otras — ocupa el ancho completo arriba, con tipografía display grande
+- Reemplazar el gráfico de torta como elemento principal: usar barras horizontales por categoría con el nombre y monto a la izquierda y la barra proporcional a la derecha (más legible y con más personalidad que un pie chart genérico)
+- Las tarjetas de "Plan Básico/Pro/Familiar" en /planes deben diferenciarse visualmente más entre sí, no solo con un checkmark — usar el acento violeta (#a78bfa) sutilmente en el borde de la tarjeta Pro destacada
+
+## Animaciones y microinteracciones (con moderación, no exceso)
+- Al cargar el Dashboard: las barras de categorías se animan creciendo desde 0 hasta su valor real (timing escalonado, no todas a la vez)
+- Al completar una meta de ahorro: breve animación de confirmación en la barra de progreso (no un confetti genérico, algo más sutil como un brillo que recorre la barra)
+- Hover en botones principales: leve elevación de sombra, sin escalado exagerado
+- Transición suave (200-250ms) al cambiar entre pestañas de navegación
+- Respetar prefers-reduced-motion: si el usuario tiene esa preferencia activada en su sistema, desactivar animaciones decorativas
+
+## Estados vacíos y de carga
+- Reemplazar cualquier estado vacío genérico ("No hay transacciones") por mensajes orientados a la acción, en el tono de Saldo: ej. "Todavía no cargaste ningún movimiento este mes. Empezá agregando tu primer gasto o ingreso." con el botón de agregar ya visible debajo
+- Skeleton loaders deben respetar el layout real de cada sección (no rectángulos genéricos), para que no haya salto de layout al cargar los datos reales
+
+## Detalles de pulido
+- Iconografía consistente: usar un solo set de íconos (lucide-react) en todo el proyecto, mismo grosor de trazo
+- Bordes redondeados consistentes: 12px para tarjetas, 8px para botones e inputs, 6px para badges pequeños
+- Estado de foco visible (accesibilidad) en todos los elementos interactivos, con outline en el color de acento principal
+- Revisar que todos los textos de error sean específicos y orientados a solución, no genéricos (ej. en vez de "Error al guardar", usar "No pudimos guardar tu transacción. Revisá tu conexión e intentá de nuevo")
+
+## Qué NO cambiar
+- No tocar la lógica de negocio, hooks, ni estructura de datos existente — esto es exclusivamente una pasada de diseño visual y de copy
+- No cambiar la paleta base (fondo oscuro, verde como acento principal) — solo refinarla y darle más carácter como se describe arriba
+- Mantener toda la funcionalidad de planes, admin, IA, y multi-moneda intacta
+
+## Notas
+- Aplicar estos cambios de forma consistente en TODAS las pantallas: Dashboard, Transacciones, Metas, Análisis IA, Perfil, Planes, Admin, Login/Registro
+- Priorizar legibilidad y jerarquía clara por sobre la decoración
+- Antes de finalizar, revisar que el diseño se vea bien tanto en mobile como en desktop

@@ -1,0 +1,5 @@
+Para confirmarlo dentro de la app misma:
+
+Andá a tu app (npm run dev 
+Iniciá sesión con vhf9325@gmail.com
+Andá a la pestaña Perfil
