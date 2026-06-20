@@ -384,7 +384,7 @@ export default function App() {
                   className="btn-secondary w-full text-sm flex items-center justify-center gap-2"
                 >
                   <Download size={14} />
-                  Mes actual (CSV)
+                  Mes actual (Excel)
                 </button>
                 {planInfo.isPro ? (
                   <button
@@ -392,7 +392,7 @@ export default function App() {
                     className="btn-secondary w-full text-sm flex items-center justify-center gap-2"
                   >
                     <Download size={14} />
-                    Todo el historial (CSV)
+                    Todo el historial (Excel)
                   </button>
                 ) : (
                   <button
