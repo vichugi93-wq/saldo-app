@@ -3,10 +3,6 @@ import { Transaction } from '../types/transaction';
 import { getCurrency } from './currencies';
 import { CurrencyCode } from '../types/currency';
 
-function fmtAmount(amount: number, symbol: string): string {
-  return `${symbol} ${amount.toLocaleString('es-PY')}`;
-}
-
 export function exportTransactionsCSV(
   transactions: Transaction[],
   currency: CurrencyCode,
