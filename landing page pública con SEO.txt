@@ -1,0 +1,64 @@
+Agregar a la app "Saldo" una landing page pública con SEO básico y un blog simple, sin tocar la funcionalidad existente de login/dashboard.
+
+## Contexto
+- La app actualmente muestra directo la pantalla de login al entrar a la URL raíz
+- Necesitamos una landing pública en "/" que explique qué es Saldo, con contenido indexable por Google
+- El login pasa a estar en una ruta separada, ej: "/login" o "/app"
+- Primer mercado objetivo: Paraguay, expandiendo luego al resto de LATAM
+
+## Landing page (ruta "/")
+
+### Estructura de contenido
+- Hero: título principal con palabra clave ("Controlá tus finanzas personales en guaraníes, pesos o tu moneda"), subtítulo explicando el valor, botón "Registrate gratis" que lleva a /registro
+- Sección de funcionalidades: 4-5 bloques cortos explicando transacciones, metas de ahorro, análisis con IA, multi-moneda — cada uno con ícono (lucide-react) y 1-2 líneas de texto real (no solo imágenes)
+- Sección de planes: comparativa simple de Básico/Pro/Familiar con CTA a registro
+- Footer: links a /blog, redes sociales, y mención "Hecho en Paraguay 🇵🇾"
+- Diseño coherente con la marca actual (fondo oscuro #0a0a0a, acento verde #22c55e)
+
+### SEO técnico
+- Title: "Saldo — Controlá tus finanzas personales en guaraníes y más monedas | LATAM"
+- Meta description: resumen de 150-160 caracteres con palabras clave (finanzas personales, ahorro, Paraguay, presupuesto)
+- Open Graph tags (og:title, og:description, og:image, og:url) para que se vea bien al compartir en redes
+- Twitter Card tags
+- Schema markup tipo SoftwareApplication (JSON-LD) con nombre, descripción, categoría, y rango de precios de los planes — ayuda a que Google entienda qué tipo de producto es
+- Todo el texto de la landing debe ser HTML real renderizado en el DOM inicial, no solo generado dinámicamente después de cargar JS (verificar que "view source" muestre el contenido, no una página vacía)
+
+## Página de SEO local: /finanzas-paraguay (o similar)
+- Página adicional enfocada en búsquedas específicas de Paraguay: "app finanzas personales Paraguay", "control de gastos en guaraníes"
+- Contenido propio (no duplicado de la landing principal): mencionar contexto local, por qué una app pensada para guaraníes es distinta a una app genérica, beneficios concretos para usuarios paraguayos
+- Su propio title y meta description enfocados en esa búsqueda local
+- Linkeada desde el footer y desde la landing principal
+
+## Rutas
+- "/" → landing pública
+- "/finanzas-paraguay" → página de SEO local
+- "/login" → formulario de login (el que ya existe, solo se mueve de ruta)
+- "/registro" → formulario de registro
+- "/app" o similar → dashboard, protegido, requiere sesión activa
+- "/blog" → listado de artículos
+- "/blog/:slug" → artículo individual
+
+## Blog simple (sin CMS)
+- Los artículos viven como archivos markdown o constantes de TypeScript dentro del proyecto (src/content/blog/), no requiere base de datos ni panel de administración
+- Cada artículo tiene: slug, título, descripción, fecha, contenido, y se renderiza con su propio title/meta description únicos
+- Crear 3 artículos de ejemplo, originales y completos (no resúmenes de fuentes externas), en español, tono cercano, 400-600 palabras cada uno, con encabezados (H2/H3) para estructura SEO:
+  1. "Cómo hacer un presupuesto simple en guaraníes paso a paso"
+  2. "5 errores comunes al manejar la plata (y cómo evitarlos)"
+  3. "Por qué llevar un registro de gastos cambia tu relación con el dinero"
+- Listado en /blog debe mostrar tarjetas con título, descripción corta, y fecha
+- Diseño de los artículos: tipografía legible, ancho de lectura cómodo (max-width ~680px), coherente con la marca
+
+## Archivos técnicos adicionales
+- sitemap.xml generado o estático en /public, listando landing, página local, blog y artículos
+- robots.txt en /public permitiendo indexación de rutas públicas, bloqueando "/app" y rutas privadas
+- favicon e ícono ya existentes, mantenerlos
+
+## Qué NO cambiar
+- No modificar lógica de autenticación, hooks existentes, ni estructura de Supabase
+- El dashboard y todas las funciones actuales siguen funcionando igual, solo cambia la ruta de acceso
+- Mantener toda la paleta de colores y tipografía ya definida en el proyecto
+
+## Notas
+- Priorizar que la landing cargue rápido y el contenido sea visible sin depender de JavaScript pesado
+- Verificar responsive en mobile y desktop
+- Los textos del blog y de la página local deben ser contenido original, útil, sin relleno

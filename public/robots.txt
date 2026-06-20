@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /blog/
+Allow: /finanzas-paraguay
+Disallow: /app
+Disallow: /app/
+
+Sitemap: https://rankpy-saldo.netlify.app/sitemap.xml

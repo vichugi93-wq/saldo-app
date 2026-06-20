@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, CreditCard, Target, Bot, User, Settings, Lock, LucideIcon, Download, FileText } from 'lucide-react';
-import { useAuth } from './hooks/useAuth';
+import { useAuthContext } from './contexts/AuthContext';
 import { useTransactions } from './hooks/useTransactions';
 import { useSavingsGoals } from './hooks/useSavingsGoals';
 import { useAIAnalysis } from './hooks/useAIAnalysis';
@@ -8,9 +8,6 @@ import { usePlan } from './hooks/usePlan';
 import { useFamilyGroup } from './hooks/useFamilyGroup';
 import { usePaymentRequests } from './hooks/usePaymentRequests';
 import { useBudgets } from './hooks/useBudgets';
-import { LoginForm } from './components/Auth/LoginForm';
-import { RegisterForm } from './components/Auth/RegisterForm';
-import { ForgotPassword } from './components/Auth/ForgotPassword';
 import { WelcomeModal } from './components/WelcomeModal';
 import { Dashboard } from './components/Dashboard';
 import { TransactionList } from './components/TransactionList';
@@ -28,26 +25,10 @@ import { PLAN_LABELS } from './types/plan';
 import { CurrencyCode } from './types/currency';
 
 type Tab = 'dashboard' | 'transactions' | 'goals' | 'ai' | 'profile' | 'plans' | 'admin' | 'family';
-type AuthView = 'login' | 'register' | 'forgot';
-
-function Skeleton() {
-  return (
-    <div className="min-h-screen bg-bg flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <img src="/logo.svg" alt="Saldo" className="w-16 h-16 rounded-2xl animate-pulse" />
-        <div className="flex gap-1">
-          {[0,1,2].map((i) => (
-            <div key={i} className="w-1.5 h-1.5 rounded-full bg-income/40 animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
-  const auth = useAuth();
-  const { user, profile, loading, signIn, signUp, signOut, updateProfile, refreshProfile } = auth;
+  const auth = useAuthContext();
+  const { user, profile, updateProfile, refreshProfile } = auth;
   const planInfo = usePlan(profile);
 
   const txs = useTransactions(user?.id);
@@ -82,10 +63,13 @@ export default function App() {
   }, [user, pendingInviteToken]);
 
   const [tab, setTab] = useState<Tab>('dashboard');
-  const [authView, setAuthView] = useState<AuthView>('login');
   const [showTxForm, setShowTxForm] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState('');
+
+  useEffect(() => {
+    document.title = 'Saldo — Tu dashboard financiero';
+  }, []);
 
   useEffect(() => {
     if (profile && planInfo.isExpired && profile.plan !== 'basic') {
@@ -104,51 +88,6 @@ export default function App() {
   const netBalance = monthlyTotals.income - monthlyTotals.expense;
 
   const needsOnboarding = user && profile && !profile.name;
-
-  if (loading) return <Skeleton />;
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-        <div className="w-full max-w-sm space-y-6">
-          <div className="text-center flex flex-col items-center gap-3">
-            <img src="/logo.svg" alt="Saldo" className="w-20 h-20 rounded-2xl shadow-glow-income" />
-            <div>
-              <h1 className="font-display text-4xl font-bold text-income">Saldo</h1>
-              <p className="text-muted text-sm mt-1">Tus finanzas, bajo control</p>
-            </div>
-          </div>
-
-          {authView === 'forgot' ? (
-            <ForgotPassword onBack={() => setAuthView('login')} />
-          ) : (
-            <>
-              <div className="flex border-b border-border">
-                {(['login', 'register'] as AuthView[]).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setAuthView(v)}
-                    className={`flex-1 pb-2.5 text-sm font-medium transition-colors ${
-                      authView === v
-                        ? 'text-white border-b-2 border-income -mb-px'
-                        : 'text-muted hover:text-white'
-                    }`}
-                  >
-                    {v === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
-                  </button>
-                ))}
-              </div>
-              {authView === 'login' ? (
-                <LoginForm onSignIn={signIn} onForgotPassword={() => setAuthView('forgot')} />
-              ) : (
-                <RegisterForm onSignUp={signUp} />
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   if (needsOnboarding) {
     return (
@@ -316,7 +255,7 @@ export default function App() {
         )}
 
         {tab === 'admin' && isAdmin && (
-          <AdminPanel adminId={user.id} />
+          <AdminPanel adminId={user!.id} />
         )}
 
         {tab === 'profile' && (
@@ -326,11 +265,11 @@ export default function App() {
             <div className="card space-y-4">
               <div>
                 <label className="label">Nombre</label>
-                <p className="text-white font-medium">{profile?.name ?? user.email?.split('@')[0] ?? '—'}</p>
+                <p className="text-white font-medium">{profile?.name ?? user?.email?.split('@')[0] ?? '—'}</p>
               </div>
               <div>
                 <label className="label">Email</label>
-                <p className="text-white">{user.email}</p>
+                <p className="text-white">{user?.email}</p>
               </div>
               <div>
                 <label className="label">Plan activo</label>
@@ -411,7 +350,7 @@ export default function App() {
               <p className="text-muted text-xs">Saldo — © 2026</p>
             </div>
 
-            <button onClick={signOut} className="btn-danger w-full">
+            <button onClick={auth.signOut} className="btn-danger w-full">
               Cerrar sesión
             </button>
           </div>
