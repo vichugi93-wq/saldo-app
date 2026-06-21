@@ -17,7 +17,7 @@ export function ForgotPassword({ onBack }: Props) {
     setLoading(true);
     try {
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/restablecer-contrasena`,
       });
       if (err) throw err;
       setSent(true);

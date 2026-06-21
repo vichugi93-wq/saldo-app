@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { BlogListPage } from './pages/BlogListPage';
 import { BlogArticlePage } from './pages/BlogArticlePage';
 import { FinanzasParaguayPage } from './pages/FinanzasParaguayPage';
+import { ResetPassword } from './components/Auth/ResetPassword';
 import App from './App';
 
 function Skeleton() {
@@ -44,6 +45,7 @@ export function AppRouter() {
       <Route path="/blog"                element={<BlogListPage />} />
       <Route path="/blog/:slug"          element={<BlogArticlePage />} />
       <Route path="/finanzas-paraguay"   element={<FinanzasParaguayPage />} />
+      <Route path="/restablecer-contrasena" element={<ResetPassword />} />
       <Route path="/app"                 element={<ProtectedRoute><App /></ProtectedRoute>} />
       <Route path="*"                    element={<Navigate to="/" replace />} />
     </Routes>
