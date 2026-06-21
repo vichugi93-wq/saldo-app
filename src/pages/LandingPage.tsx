@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
 import {
   CreditCard, Target, Bot, Users, BarChart3, CheckCircle2, Globe,
 } from 'lucide-react';
@@ -81,19 +81,12 @@ const PLANS = [
 ];
 
 export function LandingPage() {
-  useEffect(() => {
-    document.title = 'Saldo — Controlá tus finanzas personales en guaraníes y más monedas | LATAM';
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute(
-        'content',
-        'Saldo es la app de finanzas personales pensada para Paraguay y LATAM. Controlá gastos, ahorrá con metas y recibí análisis con IA. Gratis para siempre.',
-      );
-    }
-  }, []);
-
   return (
     <div className="min-h-screen bg-bg text-white font-sans">
+      <Head>
+        <title>Saldo — Controlá tus finanzas personales en guaraníes y más monedas | LATAM</title>
+        <meta name="description" content="Saldo es la app de finanzas personales pensada para Paraguay y LATAM. Controlá gastos, ahorrá con metas y recibí análisis con IA. Gratis para siempre." />
+      </Head>
       {/* Nav */}
       <header className="sticky top-0 z-50 bg-bg/90 backdrop-blur-sm border-b border-border">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">

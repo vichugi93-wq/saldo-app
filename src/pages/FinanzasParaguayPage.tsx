@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
 import { CheckCircle2, ArrowLeft } from 'lucide-react';
 
 const BENEFITS = [
@@ -12,19 +12,12 @@ const BENEFITS = [
 ];
 
 export function FinanzasParaguayPage() {
-  useEffect(() => {
-    document.title = 'App de finanzas personales para Paraguay — Control de gastos en guaraníes | Saldo';
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute(
-        'content',
-        'Saldo es la app de finanzas personales diseñada para Paraguay. Controlá tus gastos en guaraníes, creá presupuestos y ahorrá más cada mes. Gratis.',
-      );
-    }
-  }, []);
-
   return (
     <div className="min-h-screen bg-bg text-white font-sans">
+      <Head>
+        <title>App de finanzas personales para Paraguay — Control de gastos en guaraníes | Saldo</title>
+        <meta name="description" content="Saldo es la app de finanzas personales diseñada para Paraguay. Controlá tus gastos en guaraníes, creá presupuestos y ahorrá más cada mes. Gratis." />
+      </Head>
       {/* Nav */}
       <header className="border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">

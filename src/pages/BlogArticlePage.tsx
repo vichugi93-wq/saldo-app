@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
 import { getPostBySlug } from '../content/blog';
 import { ArrowLeft, Calendar } from 'lucide-react';
 
@@ -13,17 +13,14 @@ export function BlogArticlePage() {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getPostBySlug(slug) : undefined;
 
-  useEffect(() => {
-    if (!post) return;
-    document.title = `${post.title} — Blog Saldo`;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', post.description);
-  }, [post]);
-
   if (!post) return <Navigate to="/blog" replace />;
 
   return (
     <div className="min-h-screen bg-bg text-white font-sans">
+      <Head>
+        <title>{post.title} — Blog Saldo</title>
+        <meta name="description" content={post.description} />
+      </Head>
       {/* Nav */}
       <header className="border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">

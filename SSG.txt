@@ -1,0 +1,34 @@
+Implementar pre-renderizado estático (SSG) para las rutas públicas de SEO en la app "Saldo", sin convertir toda la app a SSR ni afectar el dashboard privado.
+
+## Contexto
+- La app es Vite + React + TypeScript
+- Actualmente todo el contenido se genera client-side: el HTML inicial solo tiene <div id="root"></div>, y React arma el contenido en el navegador
+- Esto afecta la indexación SEO de las rutas públicas (landing, blog, página de SEO local), donde necesitamos que el contenido esté presente en el HTML servido inicialmente
+- El dashboard y rutas privadas (/app y similares) NO necesitan este cambio, ya que no deben ser indexadas
+
+## Objetivo técnico
+Usar vite-plugin-ssg (o vite-react-ssg, según cuál tenga mejor compatibilidad con el setup actual de React Router) para pre-renderizar en build time únicamente estas rutas:
+- "/" (landing)
+- "/finanzas-paraguay" (SEO local)
+- "/blog" (listado)
+- "/blog/:slug" (cada artículo individual, generado a partir de los archivos de contenido existentes en src/content/blog/)
+
+## Qué debe lograr el resultado
+- Al hacer "Ver código fuente" en cualquiera de esas rutas, el HTML debe contener el contenido visible real (títulos, textos, no solo el div vacío)
+- Cada ruta de blog debe generar su propio archivo HTML estático en el build, con su title y meta description específicos ya en el head
+- El resto de la app (login, registro, /app, dashboard, todas las rutas protegidas) debe seguir funcionando exactamente igual que ahora, como SPA normal sin pre-renderizado
+- La hidratación de React debe funcionar correctamente después de cargar el HTML pre-renderizado (la app sigue siendo interactiva, los botones funcionan, etc.)
+
+## Consideraciones de implementación
+- Verificar que el proceso de build (npm run build) genere correctamente los archivos estáticos para cada ruta pre-renderizada dentro de la carpeta dist
+- Mantener compatibilidad con el despliegue actual en Netlify (build command: npm run build, publish directory: dist) — no debe requerir cambiar la plataforma de hosting
+- Si alguna librería usada en la landing o el blog depende de APIs del navegador (window, document) que no existen en build time/Node, debe manejarse con guards apropiados (ej. typeof window !== 'undefined') para que el build no falle
+- No modificar la lógica de autenticación, Supabase, ni ninguna funcionalidad del dashboard
+
+## Validación esperada
+- Después de implementar, correr npm run build y npm run preview (o servir la carpeta dist localmente), y confirmar con "Ver código fuente" que las rutas públicas muestran el contenido real en el HTML
+- Confirmar que las rutas privadas siguen comportándose como antes
+
+## Notas
+- Priorizar la solución más simple y estable dado que el proyecto ya está en producción — evitar reescrituras grandes de la estructura de rutas existente si no son estrictamente necesarias
+- Documentar en un comentario al final de la configuración de Vite cualquier paso manual adicional que el desarrollador deba ejecutar al agregar nuevos artículos de blog en el futuro, para que sigan siendo pre-renderizados automáticamente

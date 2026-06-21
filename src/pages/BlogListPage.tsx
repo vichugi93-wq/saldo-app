@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
 import { blogPosts } from '../content/blog';
 import { ArrowLeft, Calendar } from 'lucide-react';
 
@@ -10,16 +10,12 @@ function formatDate(iso: string): string {
 }
 
 export function BlogListPage() {
-  useEffect(() => {
-    document.title = 'Blog de finanzas personales — Saldo';
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute('content', 'Artículos sobre finanzas personales, presupuesto y ahorro pensados para Paraguay y LATAM.');
-    }
-  }, []);
-
   return (
     <div className="min-h-screen bg-bg text-white font-sans">
+      <Head>
+        <title>Blog de finanzas personales — Saldo</title>
+        <meta name="description" content="Artículos sobre finanzas personales, presupuesto y ahorro pensados para Paraguay y LATAM." />
+      </Head>
       {/* Nav */}
       <header className="border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
