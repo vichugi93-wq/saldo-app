@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.netlify.rankpy_saldo.twa",
+    "sha256_cert_fingerprints": ["77:15:69:6F:D9:1B:21:32:0A:93:71:2B:F9:63:F4:8D:19:5A:64:1B:50:99:4F:51:3B:AD:F2:94:52:EC:F8:76"]
+  }
+}]
